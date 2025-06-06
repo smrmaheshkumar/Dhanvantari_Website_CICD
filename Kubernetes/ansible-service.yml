@@ -1,0 +1,7 @@
+---
+- hosts: kubernetes
+  user: root
+
+  tasks:
+    - name: Creating the service
+      command: kubectl apply -f dhanvantari-service.yml

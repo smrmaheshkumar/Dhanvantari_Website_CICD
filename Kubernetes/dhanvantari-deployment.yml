@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dhanvantari-website
+  labels:
+     app: website
+
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: website
+
+  template:
+    metadata:
+      labels:
+        app: website
+    spec:
+      containers:
+      - name: dhanvantari-container
+        image: dhanvantarisoftware/dhanvantari-image
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
