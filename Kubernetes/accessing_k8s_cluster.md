@@ -66,7 +66,7 @@ If using an IAM role attached to the EC2:
 Run:
 
 ```bash
-aws eks --region <region> update-kubeconfig --name <cluster-name>
+aws eks --region us-west-2 update-kubeconfig --name my-eks-cluster
 ```
 
 Replace:
