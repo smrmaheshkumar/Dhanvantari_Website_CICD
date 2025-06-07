@@ -63,5 +63,3 @@ Click **Save → Build Now**, and the cloning should succeed.
 
 ---
 
-Let me know if you'd like me to help troubleshoot SSH key config or switch to using Personal Access Token via HTTPS.
-
