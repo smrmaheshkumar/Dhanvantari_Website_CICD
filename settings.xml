@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+ 
+  <pluginGroups></pluginGroups>
+  <proxies></proxies>
+  <servers>
+    <server>
+      <id>nexusdeploymentrepo</id>
+      <username>admin</username>
+      <password>admin123</password>
+    </server>
+  </servers>
+  <mirrors>
+    <mirror>
+      <id>nexus</id>
+      <mirrorOf>*</mirrorOf>
+      <url>http://52.64.212.87:8081/repository/vinayaka_maven_proxy/</url>
+    </mirror>
+  </mirrors>
+  <profiles>
+    <profile>
+      <id>env-dev</id>
+      <activation>
+        <property>
+          <name>target-env</name>
+          <value>dev</value>
+        </property>
+      </activation>
+      <properties>
+        <tomcatPath>/path/to/tomcat/instance</tomcatPath>
+      </properties>
+    </profile>
+        <profile>
+     <id>snapshot</id>
+     <repositories>
+       <repository>
+         <id>nexus-snapshot-repo</id>
+         <name>your custom repo</name>
+         <url>http://52.64.212.87:8081/repository/vinayaka_maven_snapshot/</url>
+       </repository>
+           
+     </repositories>
+   </profile>
+    <profile>
+     <id>release</id>
+     <repositories>
+       <repository>
+         <id>nexus-release-repo</id>
+         <name>your custom repo</name>
+         <url>http://52.64.212.87:8081/repository/vinayaka_maven_releases/</url>
+       </repository>
+     </repositories>
+   </profile>
+    <profile>
+      <id>nexus</id>
+      <repositories>
+        <repository>
+          <id>central</id>
+          <url>http://central</url>
+          <releases><enabled>true</enabled></releases>
+          <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+      </repositories>
+     <pluginRepositories>
+        <pluginRepository>
+          <id>central</id>
+          <url>http://central</url>
+          <releases><enabled>true</enabled></releases>
+          <snapshots><enabled>true</enabled></snapshots>
+        </pluginRepository>
+      </pluginRepositories>
+    </profile>
+  </profiles>
+</settings>
