@@ -1,15 +1,3 @@
-The error you're seeing in Jenkins is:
-
-```
-No ECDSA host key is known for github.com and you have requested strict checking.
-Host key verification failed.
-fatal: Could not read from remote repository.
-```
-
-This means Jenkins (or rather the system Jenkins is running on) **has not verified the SSH fingerprint of GitHub**, so it is refusing to connect due to strict host key checking.
-
----
-
 ## ✅ Fix This Error in 3 Steps:
 
 ### 🔧 **1. Manually Trust GitHub's SSH Host Key**
