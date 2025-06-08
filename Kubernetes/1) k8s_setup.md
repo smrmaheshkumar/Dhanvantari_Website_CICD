@@ -14,10 +14,10 @@ Please click on this link to download AWS CLI based upong your Operating System 
    d. Test that your kubectl installation was successful or not by using the command kubectl version --short --client
 
    ```sh
-   curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.25.6/2023-01-30/bin/linux/amd64/kubectl
-   chmod +x ./kubectl
-   mv ./kubectl /usr/local/sbin
-   kubectl version --short --client
+curl -LO "https://dl.k8s.io/release/$(curl -Ls https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+chmod +x kubectl
+sudo mv kubectl /usr/local/bin/
+kubectl version --client
    ```
 2. Setup eksctl \
    a. Download and extract the latest release of eksctl \
