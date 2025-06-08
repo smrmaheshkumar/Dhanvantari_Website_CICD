@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: dhanvantari-website
+  name: dhanvantari-deployment
   labels:
      app: website
 
