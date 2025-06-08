@@ -1,36 +1,30 @@
-# Kubernetes Setup on Amazon EKS
+## Prerequisites
 
-You can follow the same procedure in k8s official documentation. AWS document [Getting started with Amazon EKS – eksctl](https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html)
+1. **Amazon Linux 2 EC2 instance** with proper IAM permissions.
+2. **AWS CLI v2** installed and configured (`aws configure`).
+3. **kubectl** installed.
+4. **eksctl** installed — the easiest way to create and manage EKS clusters.
 
-Please click on this link to download AWS CLI based upong your Operating System [AWS CLI Installation](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
-#### Pre-Requisites:
-  - EC2 Instance (t2.small)
-  - Install AWSCLI latest verison in the EC2 Instance
+---
 
-1. Setup kubectl \
-   a. Download latest kubectl version 1.25 \
-   b. Grant execution permissions for kubectl as a executable \
-   c. Move kubectl onto /usr/local/bin \
-   d. Test that your kubectl installation was successful or not by using the command kubectl version --short --client
+## Step 1: Update Amazon Linux 2 and Install Dependencies
 
-   ```sh
-curl -LO "https://dl.k8s.io/release/$(curl -Ls https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-chmod +x kubectl
-sudo mv kubectl /usr/local/bin/
-kubectl version --client
-   ```
-2. Setup eksctl \
-   a. Download and extract the latest release of eksctl \
-   b. Move the extracted binary to /usr/local/bin \
-   c. Test that your eksctl installation was successful by using the command eksctl version
+```bash
+sudo yum update -y
+sudo yum install -y curl jq
+```
 
-   ```sh
-   curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
-   sudo mv /tmp/eksctl /usr/local/sbin
-   eksctl version
-   ```
+---
 
-3. Now create an IAM Role and attach this role to an EC2 instance
+## Step 2: Install AWS CLI v2 (if not installed)
+
+```bash
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+aws --version
+```
+## Now create an IAM Role and attach this role to an EC2 instance
 
    IAM user should have access to the following services
 
@@ -38,33 +32,79 @@ kubectl version --client
    
    Note: Check eksctl documentaiton for [Minimum IAM policies](https://eksctl.io/usage/minimum-iam-policies/)
 
-4. Now create your k8s cluster and nodes
-   ```sh
-   eksctl create cluster --name cluster-name  \
-   --region region-name \
-   --node-type instance-type \
-   --nodes-min 2 \
-   --nodes-max 2 \
-   --zones <AZ-1>,<AZ-2>
-   ```
+---
 
-   #### Example:
-   ```sh
-   eksctl create cluster --name dhanvantari-cluster \
-      --region us-east-2 \
-      --node-type t2.medium
-    ```
+## Step 3: Install kubectl
 
-6. To delete the EKS clsuter execute the below command
-   ```sh
-   eksctl delete cluster dhanvantari-cluster --region ap-south-1
-   ```
+```bash
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+chmod +x kubectl
+sudo mv kubectl /usr/local/bin/
+kubectl version --client
+```
 
-7. Validate your cluster using by creating by checking nodes and by creating a pod
-   ```sh
-   kubectl get nodes
-   kubectl run nginx --image=nginx
-   ```
+---
+
+## Step 4: Install eksctl
+
+`eksctl` is a CLI tool by AWS to create/manage EKS clusters easily.
+
+```bash
+curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+sudo mv /tmp/eksctl /usr/local/bin
+eksctl version
+```
+
+---
+
+## Step 5: Create the EKS Cluster
+
+Basic example to create a cluster named `my-cluster` in `us-east-1` region with 2 nodes.
+
+```bash
+eksctl create cluster \
+  --name my-eks-cluster \
+  --region us-west-2 \
+  --nodegroup-name linux-nodes \
+  --node-type t3.medium \
+  --nodes 2 \
+  --nodes-min 1 \
+  --nodes-max 3 \
+  --managed
+```
+
+This command will:
+
+* Create an EKS cluster control plane.
+* Create a managed node group with EC2 instances running Amazon Linux 2.
+* Configure `kubectl` context automatically.
+
+---
+
+## Step 6: Verify your cluster
+
+Check nodes:
+
+```bash
+kubectl get nodes
+```
+
+---
+
+## Step 7: Cleanup
+
+To delete the cluster when done:
+
+```bash
+eksctl delete cluster --name my-eks-cluster --region us-west-2
+```
+
+---
+
+If you want, I can also help with creating the cluster using CloudFormation or Terraform or do a custom manual setup. Let me know!
+
+
+
 
    #### Deploying Nginx pods on Kubernetes
 1. Deploying Nginx Container
