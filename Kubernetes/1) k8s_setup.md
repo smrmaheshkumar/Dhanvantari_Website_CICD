@@ -16,7 +16,7 @@ Please click on this link to download AWS CLI based upong your Operating System 
    ```sh
    curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.25.6/2023-01-30/bin/linux/amd64/kubectl
    chmod +x ./kubectl
-   mv ./kubectl /usr/local/bin
+   mv ./kubectl /usr/local/sbin
    kubectl version --short --client
    ```
 2. Setup eksctl \
