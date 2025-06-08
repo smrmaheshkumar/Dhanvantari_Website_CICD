@@ -1,0 +1,14 @@
+---
+- hosts: localhost
+  become: false
+  tasks:
+  - name: Create Docker Image Using our war file
+    command: docker build -t smrmaheshkumar/dhanvantari-image .
+    args:
+      chdir: /opt/docker
+
+  - name: Push the image into our DockerHub registry
+    command: docker push smrmaheshkumar/dhanvantari-image
+
+  - name: Removing Docker images from Ansible server
+    command: docker rmi -f /smrmaheshkumar/dhanvantari-image

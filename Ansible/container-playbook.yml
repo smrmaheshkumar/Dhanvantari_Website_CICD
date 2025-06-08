@@ -1,0 +1,13 @@
+---
+- hosts: localhost
+  tasks:
+  - name: Stopping Running Container
+    command: docker stop dhanvantari-container
+    ignore_errors: yes
+
+  - name: Removing Stopped Container
+    command: docker rm -f dhanvantari-container
+    ignore_errors: yes
+
+  - name: Create Container
+    command: docker run -itd -p 8080:8080 --name dhanvantari-container smrmaheshkumar/dhanvantari-image
