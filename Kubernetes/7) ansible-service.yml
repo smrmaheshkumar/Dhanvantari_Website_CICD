@@ -1,5 +1,6 @@
 ---
 - hosts: kubernetes
+  become: true
   user: root
 
   tasks:
