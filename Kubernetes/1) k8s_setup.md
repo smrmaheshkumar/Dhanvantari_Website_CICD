@@ -124,3 +124,54 @@ If you want, I can also help with creating the cluster using CloudFormation or T
    kubectl expose deployment mydeployment --port=8080 --type=LoadBalancer
    kubectl get services -o wide
    ```
+
+### Kubectl Troubleshooting
+
+The error `-bash: kubectl: command not found` means `kubectl` is not installed or not in your system's PATH.
+
+Let's fix that step-by-step on Amazon Linux 2.
+
+---
+
+### Install `kubectl` on Amazon Linux 2
+
+Run these commands:
+
+```bash
+# Download kubectl binary (latest stable release)
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+
+# Make it executable
+chmod +x kubectl
+
+# Move it to a directory in your PATH
+sudo mv kubectl /usr/local/bin/
+
+# Verify installation
+kubectl version --client
+```
+
+---
+
+If this succeeds, you should see the kubectl client version output.
+
+---
+
+If you get a "permission denied" or similar error, make sure `/usr/local/bin` is in your PATH:
+
+```bash
+echo $PATH
+```
+
+If not, you can add it by:
+
+```bash
+export PATH=$PATH:/usr/local/bin
+```
+
+Then try running `kubectl version --client` again.
+
+---
+
+Let me know if you hit any error!
+
