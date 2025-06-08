@@ -1,13 +1,14 @@
 ---
 - hosts: kubernetes
+  become: true
   user: root
 
   tasks:
     - name: Deploy dhanvantari-website on kubernetes
-      command: kubectl apply -f dhanvantari-deployment.yml
+      command: kubectl apply -f /root/dhanvantari-deployment.yml
 
     - name: Create service for dhanvantari-website
-      command: kubectl apply -f dhanvantari-service.yml
+      command: kubectl apply -f /root/dhanvantari-service.yml
 
     - name: Update the Deployment with new pods if image got updated in docker hub
-      command: kubectl rollout restart deployment.apps/dhanvantari-website
+      command: kubectl rollout restart deployment.apps/dhanvantari-deployment
