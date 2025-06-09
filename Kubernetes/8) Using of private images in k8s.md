@@ -50,11 +50,12 @@ spec:
       containers:
       - name: dhanvantari-container
         image: smrmaheshkumar/dhanvantari-image
-      imagePullSecrets:
-      - name: mydockerregistrysecret
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
+      imagePullSecrets:
+      - name: mydockerregistrysecret
+
   strategy:
     type: RollingUpdate
     rollingUpdate:
