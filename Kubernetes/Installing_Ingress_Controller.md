@@ -53,6 +53,12 @@ eksctl create iamserviceaccount \
 
 Add helm repo
 
+Installing Helm
+
+```
+curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+```
+
 ```
 helm repo add eks https://aws.github.io/eks-charts
 ```
