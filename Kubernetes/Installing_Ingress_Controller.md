@@ -78,7 +78,7 @@ helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
   --set serviceAccount.create=false \
   --set serviceAccount.name=aws-load-balancer-controller \
   --set region=us-west-2 \
-  --set vpcId=vpc-0df44b2e552ad86be
+  --set vpcId=vpc-0bae2539b76c63646
 ```
 
 Verify that the deployments are running.
