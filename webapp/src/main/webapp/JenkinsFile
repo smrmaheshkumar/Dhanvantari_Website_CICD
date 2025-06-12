@@ -8,9 +8,9 @@ pipeline {
 
   environment {
     DOCKER_IMAGE = "smrmaheshkumar/dhanvantari-cicd:${BUILD_NUMBER}"
-    NEXUS_REGISTRY = "35.95.110.234:5000"
+    NEXUS_REGISTRY = "54.203.2.81:5000"
     NEXUS_IMAGE = "${NEXUS_REGISTRY}/dhanvantari-cicd:${BUILD_NUMBER}"
-    SONAR_URL = "http://54.187.40.41:9000"
+    SONAR_URL = "http://35.92.162.198:9000"
     GIT_REPO_NAME = "Dhanvantari_Website_CICD"
     GIT_USER_NAME = "smrmaheshkumar"
     DOCKER_REGISTRY = "index.docker.io/v1/"
