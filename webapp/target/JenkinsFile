@@ -35,7 +35,7 @@ pipeline {
 
     stage('Build and Test') {
       steps {
-        dir('Dhanvantari_Website_CICD') {
+        dir('webapp') {
           sh 'mvn clean install package'
           archiveArtifacts artifacts: 'webapp/target/*.war', fingerprint: true
         }
