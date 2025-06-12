@@ -98,7 +98,7 @@ pipeline {
       steps {
         withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
           script {
-            dir('java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests') {
+            dir('kubernetes/') {
               sh '''
                 git reset --hard HEAD
                 git clean -fdx
