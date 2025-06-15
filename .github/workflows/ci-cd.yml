@@ -6,7 +6,7 @@ on:
       - prod
 
 env:
-  SONAR_URL: http://35.89.216.127:9000
+  SONAR_URL: http://44.249.32.115:9000
   DOCKER_IMAGE: smrmaheshkumar/dhanvantari-cicd:${{ github.run_number }}
   NEXUS_URL: 52.43.124.187:5000
   NEXUS_IMAGE: 52.43.124.187:5000/dhanvantari-cicd:${{ github.run_number }}
