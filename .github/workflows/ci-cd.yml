@@ -24,8 +24,7 @@ jobs:
           --privileged
           --host=tcp://0.0.0.0:2375
           --host=unix:///var/run/docker.sock
-        volumes:
-          - ./daemon.json:/etc/docker/daemon.json:ro
+          -v ${{ github.workspace }}/daemon.json:/etc/docker/daemon.json:ro
 
     steps:
       - name: Checkout Code
