@@ -8,9 +8,9 @@ pipeline {
 
   environment {
     DOCKER_IMAGE = "smrmaheshkumar/dhanvantari-cicd:${BUILD_NUMBER}"
-    NEXUS_REGISTRY = "54.203.2.81:5000"
+    NEXUS_REGISTRY = "52.43.124.187:5000"
     NEXUS_IMAGE = "${NEXUS_REGISTRY}/dhanvantari-cicd:${BUILD_NUMBER}"
-    SONAR_URL = "http://35.92.162.198:9000"
+    SONAR_URL = "http://35.89.216.127:9000"
     GIT_REPO_NAME = "Dhanvantari_Website_CICD"
     GIT_USER_NAME = "smrmaheshkumar"
     DOCKER_REGISTRY = "index.docker.io/v1/"
@@ -34,20 +34,16 @@ pipeline {
     }
 
     stage('Build and Test') {
-      steps {
-        dir('webapp') {
-          sh 'mvn clean install package'
-          archiveArtifacts artifacts: 'target/*.war', fingerprint: true
-        }
+      steps {        
+        sh 'mvn clean install package'
+        archiveArtifacts artifacts: 'target/*.war', fingerprint: true
       }
     }
 
     stage('Static Code Analysis') {
       steps {
         withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
-          dir('Dhanvantari_Website_CICD') {
-            sh 'mvn sonar:sonar -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}'
-          }
+          sh 'mvn sonar:sonar -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}'
         }
       }
     }
