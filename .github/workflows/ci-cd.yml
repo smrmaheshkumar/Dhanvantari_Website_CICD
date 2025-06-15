@@ -17,83 +17,89 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    container:
-      image: abhishekf5/maven-abhishek-docker-agent:v1
-      options: --user root -v /var/run/docker.sock:/var/run/docker.sock
+    services:
+      docker:
+        image: docker:24-dind
+        privileged: true
+        volumes:
+          - ./daemon.json:/etc/docker/daemon.json:ro
+        options: >-
+          --host=tcp://0.0.0.0:2375
+          --host=unix:///var/run/docker.sock
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
-      with:
-        ref: prod
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: prod
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
-    - name: Build Maven Package
-      run: |
-        cd webapp
-        mvn clean package
-        ls -ltr target/
+      - name: Build Maven Package
+        run: |
+          cd webapp
+          mvn clean package
+          ls -ltr target/
 
-    - name: SonarQube Analysis
-      env:
-        SONAR_AUTH_TOKEN: ${{ secrets.SONARQUBE }}
-      run: |
-        cd webapp
-        mvn sonar:sonar \
-          -Dsonar.projectKey=dhanvantari-web \
-          -Dsonar.host.url=${{ env.SONAR_URL }} \
-          -Dsonar.login=${SONAR_AUTH_TOKEN}
+      - name: SonarQube Analysis
+        env:
+          SONAR_AUTH_TOKEN: ${{ secrets.SONARQUBE }}
+        run: |
+          cd webapp
+          mvn sonar:sonar \
+            -Dsonar.projectKey=dhanvantari-web \
+            -Dsonar.host.url=${{ env.SONAR_URL }} \
+            -Dsonar.login=${SONAR_AUTH_TOKEN}
 
-    - name: Build Docker Image
-      run: |
-        docker build -t $DOCKER_IMAGE -f webapp/Dockerfile webapp/
+      - name: Build Docker Image
+        run: |
+          docker build -t $DOCKER_IMAGE -f webapp/Dockerfile webapp/
 
-    - name: Push to DockerHub
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Push to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Push Image to DockerHub
-      run: |
-        docker push $DOCKER_IMAGE
+      - name: Push Image to DockerHub
+        run: |
+          docker push $DOCKER_IMAGE
 
-    - name: Tag Image for Nexus
-      run: |
-        docker tag $DOCKER_IMAGE $NEXUS_IMAGE
+      - name: Tag Image for Nexus
+        run: |
+          docker tag $DOCKER_IMAGE $NEXUS_IMAGE
 
-    - name: Login to Nexus and Push Image
-      env:
-        NEXUS_USER: ${{ secrets.NEXUS_USERNAME }}
-        NEXUS_PASS: ${{ secrets.NEXUS_PASSWORD }}
-      run: |
-        echo $NEXUS_PASS | docker login $NEXUS_URL --username $NEXUS_USER --password-stdin
-        docker push $NEXUS_IMAGE
+      - name: Login to Nexus and Push Image
+        env:
+          NEXUS_USER: ${{ secrets.NEXUS_USERNAME }}
+          NEXUS_PASS: ${{ secrets.NEXUS_PASSWORD }}
+        run: |
+          echo $NEXUS_PASS | docker login $NEXUS_URL --username $NEXUS_USER --password-stdin
+          docker push $NEXUS_IMAGE
 
-    - name: Update Kubernetes Deployment
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB }}
-      run: |
-        git config --global user.email "smr.maheshkumar@gmail.com"
-        git config --global user.name "${{ env.GIT_USER_NAME }}"
-        cd Kubernetes
+      - name: Update Kubernetes Deployment
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB }}
+        run: |
+          git config --global user.email "smr.maheshkumar@gmail.com"
+          git config --global user.name "${{ env.GIT_USER_NAME }}"
+          cd Kubernetes
 
-        git reset --hard HEAD
-        git clean -fdx
-        git pull origin prod
+          git reset --hard HEAD
+          git clean -fdx
+          git pull origin prod
 
-        sed -i "s/replaceImageTag/${{ github.run_number }}/g" deployment.yml
+          sed -i "s/replaceImageTag/${{ github.run_number }}/g" deployment.yml
 
-        git add deployment.yml
-        git diff-index --quiet HEAD || git commit -m "Update deployment image to version ${{ github.run_number }}"
-        git push https://${GITHUB_TOKEN}@github.com/${{ env.GIT_USER_NAME }}/${{ env.GIT_REPO_NAME }}.git HEAD:main || \
-          (echo "Push failed, retrying..." && sleep 5 && \
-          git push https://${GITHUB_TOKEN}@github.com/${{ env.GIT_USER_NAME }}/${{ env.GIT_REPO_NAME }}.git HEAD:main)
+          git add deployment.yml
+          git diff-index --quiet HEAD || git commit -m "Update deployment image to version ${{ github.run_number }}"
+          git push https://${GITHUB_TOKEN}@github.com/${{ env.GIT_USER_NAME }}/${{ env.GIT_REPO_NAME }}.git HEAD:main || \
+            (echo "Push failed, retrying..." && sleep 5 && \
+            git push https://${GITHUB_TOKEN}@github.com/${{ env.GIT_USER_NAME }}/${{ env.GIT_REPO_NAME }}.git HEAD:main)
 
-    - name: Done
-      run: echo "✅ GitHub Actions pipeline completed successfully!"
+      - name: Done
+        run: echo "✅ GitHub Actions pipeline completed successfully!"
