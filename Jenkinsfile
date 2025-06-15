@@ -9,6 +9,7 @@ pipeline {
   environment {
     SONAR_URL     = "http://35.89.216.127:9000"
     DOCKER_IMAGE  = "smrmaheshkumar/dhanvantari-cicd:${BUILD_NUMBER}"
+    NEXUS_URL     = "52.43.124.187:5000"
     NEXUS_IMAGE   = "52.43.124.187:5000/dhanvantari-cicd:${BUILD_NUMBER}"
     GIT_REPO_NAME = "Dhanvantari_Website_CICD"
     GIT_USER_NAME = "smrmaheshkumar"
@@ -56,7 +57,7 @@ pipeline {
 
           withCredentials([usernamePassword(credentialsId: 'nexus-docker-cred', usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PASS')]) {
             sh """
-              echo $NEXUS_PASS | docker login 52.43.124.187:5000 --username $NEXUS_USER --password-stdin
+              echo $NEXUS_PASS | docker login $NEXUS_URL --username $NEXUS_USER --password-stdin
               docker push ${NEXUS_IMAGE}
             """
           }
