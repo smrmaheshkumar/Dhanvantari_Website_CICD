@@ -72,7 +72,7 @@ pipeline {
               sh '''
                 git reset --hard HEAD
                 git clean -fdx
-                git pull origin main
+                git pull origin prod
               '''
 
               // Replace image tag
