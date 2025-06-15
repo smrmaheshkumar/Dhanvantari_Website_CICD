@@ -57,7 +57,7 @@ pipeline {
           // Tag for Nexus and push
           sh "docker tag ${DOCKER_IMAGE} ${NEXUS_IMAGE}"
 
-          withCredentials([usernamePassword(credentialsId: 'nexus-cred', usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PASS')]) {
+          withCredentials([usernamePassword(credentialsId: 'nexus-docker-cred', usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PASS')]) {
             sh """
               echo $NEXUS_PASS | docker login 52.43.124.187:5000 --username $NEXUS_USER --password-stdin
               docker push ${NEXUS_IMAGE}
