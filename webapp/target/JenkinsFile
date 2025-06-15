@@ -1,122 +1,68 @@
 pipeline {
   agent {
     docker {
-      image 'smrmaheshkumar/maven-abhishek-docker-agent:v1'
-      args '--user root -v /var/run/docker.sock:/var/run/docker.sock'
+      image 'abhishekf5/maven-abhishek-docker-agent:v1'
+      args '--user root -v /var/run/docker.sock:/var/run/docker.sock' // mount Docker socket to access the host's Docker daemon
     }
   }
-
-  environment {
-    DOCKER_IMAGE = "smrmaheshkumar/dhanvantari-cicd:${BUILD_NUMBER}"
-    NEXUS_REGISTRY = "52.43.124.187:5000"
-    NEXUS_IMAGE = "${NEXUS_REGISTRY}/dhanvantari-cicd:${BUILD_NUMBER}"
-    SONAR_URL = "http://35.89.216.127:9000"
-    GIT_REPO_NAME = "Dhanvantari_Website_CICD"
-    GIT_USER_NAME = "smrmaheshkumar"
-    DOCKER_REGISTRY = "index.docker.io/v1/"
-  }
-
   stages {
-    stage('Checkout SCM') {
+    stage('Checkout') {
       steps {
-        checkout([
-          $class: 'GitSCM',
-          branches: [[name: 'prod']],
-          extensions: [
-            [$class: 'CleanBeforeCheckout'],
-            [$class: 'RelativeTargetDirectory', relativeTargetDir: '.']
-          ],
-          userRemoteConfigs: [[
-            url: "https://github.com/${env.GIT_USER_NAME}/${env.GIT_REPO_NAME}.git"
-          ]]
-        ])
+        sh 'echo passed'
+        //git branch: 'main', url: 'https://github.com/smrmaheshkumar/Dhanvantari_Website_CICD.git'
       }
     }
-
     stage('Build and Test') {
-      steps {        
+      steps {
+        sh 'ls -ltr'
+        // build the project and create a WAR file
         sh 'mvn clean install package'
-        archiveArtifacts artifacts: 'target/*.war', fingerprint: true
       }
     }
-
     stage('Static Code Analysis') {
+      environment {
+        SONAR_URL = "http://35.89.216.127:9000"
+      }
       steps {
         withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
           sh 'mvn sonar:sonar -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}'
         }
       }
     }
-
-    stage('Build Docker Image') {
-      steps {
-        dir('webapp/target') {
-          sh "docker build --pull --no-cache -t ${env.DOCKER_IMAGE} ."
-        }
+    stage('Build and Push Docker Image') {
+      environment {
+        DOCKER_IMAGE = "smrmaheshkumar/dhanvantari-cicd:${BUILD_NUMBER}"
+        // DOCKERFILE_LOCATION = "webapp/target/Dockerfile"
+        REGISTRY_CREDENTIALS = credentials('docker-cred')
       }
-    }
-
-    stage('Push to Docker Hub') {
       steps {
         script {
-          docker.withRegistry("https://${env.DOCKER_REGISTRY}", 'docker-cred') {
-            docker.image("${env.DOCKER_IMAGE}").push()
-          }
-        }
-      }
-    }
-
-    stage('Push to Nexus') {
-      steps {
-        withCredentials([usernamePassword(
-          credentialsId: 'nexus-docker-cred',
-          usernameVariable: 'NEXUS_USER',
-          passwordVariable: 'NEXUS_PASS'
-        )]) {
-          script {
-            try {
-              sh """
-                docker tag ${env.DOCKER_IMAGE} ${env.NEXUS_IMAGE}
-                docker --config /tmp/.docker login ${env.NEXUS_REGISTRY} \
-                  -u ${NEXUS_USER} -p ${NEXUS_PASS}
-                docker --config /tmp/.docker push ${env.NEXUS_IMAGE}
-              """
-            } finally {
-              sh 'rm -rf /tmp/.docker || true'
-              sh "docker logout ${env.NEXUS_REGISTRY} || true"
+            sh 'cd webapp/target && docker build -t ${DOCKER_IMAGE} .'
+            def dockerImage = docker.image("${DOCKER_IMAGE}")
+            docker.withRegistry('https://index.docker.io/v1/', "docker-cred") {
+                dockerImage.push()
             }
-          }
         }
       }
     }
-
-    stage('Update Deployment') {
-      steps {
-        withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
-          script {
-            dir('kubernetes/') {
-              sh '''
-                git reset --hard HEAD
-                git clean -fdx
-                git pull origin main
-              '''
-              sh "sed -i 's/replaceImageTag/${env.BUILD_NUMBER}/g' deployment.yml"
-              sh '''
-                git config user.email "smr.maheshkumar@gmail.com"
-                git config user.name "smrmaheshkumar"
-              '''
-              withEnv(["GIT_URL=https://${GITHUB_TOKEN}@github.com/${env.GIT_USER_NAME}/${env.GIT_REPO_NAME}.git"]) {
+    stage('Update Deployment File') {
+        environment {
+            GIT_REPO_NAME = "Dhanvantari_Website_CICD"
+            GIT_USER_NAME = "smrmaheshkumar"
+        }
+        steps {
+            withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
                 sh '''
-                  git add deployment.yml
-                  git diff-index --quiet HEAD || git commit -m "Update deployment image to version ${BUILD_NUMBER}"
-                  git push ${GIT_URL} HEAD:main || \
-                    { echo "Push failed, retrying..."; sleep 5; git push ${GIT_URL} HEAD:main; }
+                    git config user.email "smr.maheshkumar@gmail.com"
+                    git config user.name "smrmaheshkumar"
+                    BUILD_NUMBER=${BUILD_NUMBER}
+                    sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" Kubernetes/deployment.yml
+                    git add Kubernetes/deployment.yml
+                    git commit -m "Update deployment image to version ${BUILD_NUMBER}"
+                    git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
                 '''
-              }
             }
-          }
         }
-      }
     }
   }
 }
