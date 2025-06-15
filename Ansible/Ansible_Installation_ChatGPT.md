@@ -5,7 +5,7 @@ To install **Ansible** on an **Amazon Linux 2** instance, you can follow these s
 ### Step 1: Update the system packages
 
 ```bash
-sudo yum update -y  
+sudo yum update -y   
 ```
 
 ---
