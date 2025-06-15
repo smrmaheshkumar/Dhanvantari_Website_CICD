@@ -9,6 +9,7 @@ pipeline {
   environment {
     SONAR_URL     = "http://35.89.216.127:9000"
     DOCKER_IMAGE  = "smrmaheshkumar/dhanvantari-cicd:${BUILD_NUMBER}"
+    NEXUS_IMAGE   = "52.43.124.187:5000/dhanvantari-cicd:${BUILD_NUMBER}"
     GIT_REPO_NAME = "Dhanvantari_Website_CICD"
     GIT_USER_NAME = "smrmaheshkumar"
   }
@@ -24,7 +25,7 @@ pipeline {
     stage('Build Maven Package') {
       steps {
         sh 'cd webapp && mvn clean package'
-        sh 'ls -ltr webapp/target/' // confirm webapp.war exists
+        sh 'ls -ltr webapp/target/'
       }
     }
 
@@ -42,13 +43,25 @@ pipeline {
       }
     }
 
-    stage('Build and Push Docker Image') {
+    stage('Build and Push Docker Images') {
       steps {
         script {
+          // Build Docker image
           sh "docker build -t ${DOCKER_IMAGE} -f webapp/Dockerfile webapp/"
-          def dockerImage = docker.image("${DOCKER_IMAGE}")
+
+          // Push to Docker Hub
           docker.withRegistry('https://index.docker.io/v1/', 'docker-cred') {
-            dockerImage.push()
+            docker.image("${DOCKER_IMAGE}").push()
+          }
+
+          // Tag for Nexus and push
+          sh "docker tag ${DOCKER_IMAGE} ${NEXUS_IMAGE}"
+
+          withCredentials([usernamePassword(credentialsId: 'nexus-cred', usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PASS')]) {
+            sh """
+              echo $NEXUS_PASS | docker login 52.43.124.187:5000 --username $NEXUS_USER --password-stdin
+              docker push ${NEXUS_IMAGE}
+            """
           }
         }
       }
@@ -57,10 +70,10 @@ pipeline {
 
   post {
     success {
-      echo "✅ CI Pipeline completed successfully!"
+      echo "✅ Pipeline executed successfully!"
     }
     failure {
-      echo "❌ CI Pipeline failed. Check logs above."
+      echo "❌ Pipeline failed. Check the above logs."
     }
   }
 }
