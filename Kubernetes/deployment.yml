@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: dhanvantari-container
-        image: smrmaheshkumar/dhanvantari-image:replaceImageTag
+        image: smrmaheshkumar/dhanvantari-image:19
         imagePullPolicy: Always
         ports:
         - containerPort: 8080

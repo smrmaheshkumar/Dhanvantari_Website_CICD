@@ -5,7 +5,7 @@
 Log in to the Jenkins server (EC2 or whatever host it's running on), then run:
 
 ```bash
-ssh -T git@github.com
+ssh -T git@github.com 
 ```
 
 You’ll likely see a message like:
